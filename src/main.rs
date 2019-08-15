@@ -76,6 +76,41 @@ fn run() -> Result<(), failure::Error> {
                 .subcommand(
                     SubCommand::with_name("list")
                 )
+                .subcommand(
+                    SubCommand::with_name("bulk-write")
+                        .arg(
+                            Arg::with_name("id")
+                                .help("the id of your Workers KV namespace")
+                                .index(1),
+                        )
+                        .arg(
+                            Arg::with_name("filename")
+                                .help("the json file of key-value pairs to upload, in form [{\"key\":..., \"value\":...}\"...]")
+                                .index(2),
+                        )
+                        .arg(
+                            Arg::with_name("expiration")
+                            .short("e")
+                            .long("expiration")
+                            .takes_value(true)
+                            .value_name("SECONDS")
+                            .help("the time, measured in number of seconds since the UNIX epoch, at which the entries should expire"),
+                        )
+                        .arg(
+                            Arg::with_name("time-to-live")
+                            .short("t")
+                            .long("ttl")
+                            .value_name("SECONDS")
+                            .takes_value(true)
+                            .help("the number of seconds for which the entries should be visible before they expire. At least 60"),
+                        )
+                        .arg(
+                            Arg::with_name("base64")
+                            .long("base64")
+                            .takes_value(false)
+                            .help("the server should base64 decode the value before storing it. Useful for writing values that wouldn't otherwise be valid JSON strings, such as images."),
+                        )
+                )
         )
         .subcommand(
             SubCommand::with_name("generate")
@@ -286,8 +321,19 @@ fn run() -> Result<(), failure::Error> {
                 let title = rename_matches.value_of("title").unwrap();
                 commands::kv::rename_namespace(id, title)?;
             }
-            ("list", Some(_create_matches)) => {
+            ("list", Some(_list_matches)) => {
                 commands::kv::list_namespaces()?;
+            }
+            ("bulk-write", Some(bulk_write_matches)) => {
+                let id = bulk_write_matches.value_of("id").unwrap();
+                let filename = bulk_write_matches.value_of("filename").unwrap();
+                let expiration = bulk_write_matches.value_of("expiration");
+                let ttl = bulk_write_matches.value_of("time-to-live");
+                let base64 = match bulk_write_matches.occurrences_of("release") {
+                    1 => true,
+                    _ => false,
+                };
+                commands::kv::write_bulk(id, filename, expiration, ttl, base64)?;
             }
             ("", None) => message::warn("kv expects a subcommand"),
             _ => unreachable!(),

@@ -1,3 +1,5 @@
+extern crate prettytable;
+
 use cloudflare::apiclient::ApiClient;
 use cloudflare::workerskv::list_namespaces::ListNamespaces;
 use cloudflare::workerskv::WorkersKvNamespace;
