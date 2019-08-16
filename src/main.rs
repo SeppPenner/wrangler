@@ -5,6 +5,7 @@ extern crate text_io;
 
 use std::env;
 use std::str::FromStr;
+use std::path::Path;
 
 use clap::{App, AppSettings, Arg, SubCommand};
 use commands::HTTPMethod;
@@ -103,15 +104,9 @@ fn run() -> Result<(), failure::Error> {
                                         .index(1),
                                 )
                                 .arg(
-                                    Arg::with_name("filename")
-                                    .help("the json file of key-value pairs to upload, in form [{\"key\":..., \"value\":...}\"...]")
+                                    Arg::with_name("path")
+                                    .help("the json file of key-value pairs to upload, in form [{\"key\":..., \"value\":...}\"...] OR the directory of files to upload.")
                                     .index(2),
-                                )
-                                .arg(
-                                    Arg::with_name("base64")
-                                    .long("base64")
-                                    .takes_value(false)
-                                    .help("the server should base64 decode the value before storing it. Useful for writing values that wouldn't otherwise be valid JSON strings, such as images."),
                                 )
                         )
                 )
@@ -332,14 +327,10 @@ fn run() -> Result<(), failure::Error> {
                 match write_matches.subcommand() {
                     ("bulk", Some(bulk_write_matches)) => {
                         let id = bulk_write_matches.value_of("id").unwrap();
-                        let filename = bulk_write_matches.value_of("filename").unwrap();
+                        let filename = bulk_write_matches.value_of("path").unwrap();
                         let expiration = bulk_write_matches.value_of("expiration");
                         let ttl = bulk_write_matches.value_of("time-to-live");
-                        let base64 = match bulk_write_matches.occurrences_of("release") {
-                            1 => true,
-                            _ => false,
-                        };
-                        commands::kv::write_bulk(id, filename, expiration, ttl, base64)?;
+                        commands::kv::write_bulk(id, Path::new(filename), expiration, ttl)?;
                     }
                     ("", None) => {
                         println!("hi!")
