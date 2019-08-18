@@ -79,22 +79,27 @@ fn run() -> Result<(), failure::Error> {
                 )
                 .subcommand(
                     SubCommand::with_name("write")
-                        .arg(
-                            Arg::with_name("expiration")
-                            .short("e")
-                            .long("expiration")
-                            .takes_value(true)
-                            .value_name("SECONDS")
-                            .help("the time, measured in number of seconds since the UNIX epoch, at which the entries should expire"),
-                        )
-                        .arg(
-                            Arg::with_name("time-to-live")
-                            .short("t")
-                            .long("ttl")
-                            .value_name("SECONDS")
-                            .takes_value(true)
-                            .help("the number of seconds for which the entries should be visible before they expire. At least 60"),
-                        )
+                        // todo(gabbi): move commented-out args below to individual workers kv writes.
+                        // Perhaps we'll use this for overall (e.g. apply to a whole set of writes)
+                        // expiration / ttl / base64 logic, because that will save json space,
+                        // but we should make sure that makes sense first before implementing this logic
+
+                        // .arg(
+                        //     Arg::with_name("expiration")
+                        //     .short("e")
+                        //     .long("expiration")
+                        //     .takes_value(true)
+                        //     .value_name("SECONDS")
+                        //     .help("the time, measured in number of seconds since the UNIX epoch, at which the entries should expire"),
+                        // )
+                        // .arg(
+                        //     Arg::with_name("time-to-live")
+                        //     .short("t")
+                        //     .long("ttl")
+                        //     .value_name("SECONDS")
+                        //     .takes_value(true)
+                        //     .help("the number of seconds for which the entries should be visible before they expire. At least 60"),
+                        // )
                         .subcommand(
                             SubCommand::with_name("bulk")
                                 .about("upload multiple key-value pairs at once")
