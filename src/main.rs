@@ -328,9 +328,7 @@ fn run() -> Result<(), failure::Error> {
                     ("bulk", Some(bulk_write_matches)) => {
                         let id = bulk_write_matches.value_of("id").unwrap();
                         let filename = bulk_write_matches.value_of("path").unwrap();
-                        let expiration = bulk_write_matches.value_of("expiration");
-                        let ttl = bulk_write_matches.value_of("time-to-live");
-                        commands::kv::write_bulk(id, Path::new(filename), expiration, ttl)?;
+                        commands::kv::write_bulk(id, Path::new(filename))?;
                     }
                     ("", None) => {
                         println!("hi!")

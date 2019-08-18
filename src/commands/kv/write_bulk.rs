@@ -11,12 +11,11 @@ use std::path::Path;
 
 use failure::bail;
 use cloudflare::workerskv::write_bulk::BulkWrite;
-use cloudflare::workerskv::write_bulk::BulkWriteParams;
 use cloudflare::workerskv::write_bulk::KeyValuePair;
 
 use crate::terminal::message;
 
-pub fn write_bulk(namespace_id: &str, filename: &Path, expiration: Option<&str>, ttl: Option<&str>) -> Result<(), failure::Error> {
+pub fn write_bulk(namespace_id: &str, filename: &Path) -> Result<(), failure::Error> {
     let client = super::api_client()?;
     let account_id = super::account_id()?;
 
@@ -43,11 +42,6 @@ pub fn write_bulk(namespace_id: &str, filename: &Path, expiration: Option<&str>,
         account_identifier: &account_id,
         namespace_identifier: namespace_id,
         bulk_key_value_pairs: pairs?,
-
-        params: BulkWriteParams {
-            expiration: expiration,
-            expiration_ttl: ttl,
-        },
     });
 
     match response {
@@ -74,7 +68,9 @@ fn parse_directory(directory: &Path) -> Result<Vec<KeyValuePair>, failure::Error
             upload_vec.push(KeyValuePair {
                 key: key,
                 value: b64_value,
-                base64: true,
+                expiration: None,
+                expiration_ttl: None,
+                base64: Some(true),
             });
         }
     }
@@ -102,7 +98,7 @@ fn generate_key(path: &Path, directory: &Path) -> Result<String, failure::Error>
      // if we have a non-utf8 path here, it will fail, but that's not realistically going to happen
     let path = path_with_forward_slash
         .to_str()
-        .expect("found a non-UTF-8 path");
+        .expect(&format!("found a non-UTF-8 path, {:?}", path_with_forward_slash));
     let path_bytes = path.as_bytes();
 
      // we use PATH_SEGMENT_ENCODE_SET since we're encoding paths, this will turn / into %2F,
