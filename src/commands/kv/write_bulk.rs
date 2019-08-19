@@ -10,7 +10,7 @@ use std::fs::metadata;
 use std::path::Path;
 
 use failure::bail;
-use cloudflare::workerskv::write_bulk::BulkWrite;
+use cloudflare::workerskv::write_bulk::WriteBulk;
 use cloudflare::workerskv::write_bulk::KeyValuePair;
 
 use crate::terminal::message;
@@ -46,14 +46,14 @@ pub fn write_bulk(namespace_id: &str, filename: &Path) -> Result<(), failure::Er
         bail!("Too many key-value pairs uploaded at once {} while max is 10,000", pairs.len());
     }
 
-    let response = client.request(&BulkWrite {
+    let response = client.request(&WriteBulk {
         account_identifier: &account_id,
         namespace_identifier: namespace_id,
         bulk_key_value_pairs: pairs,
     });
 
     match response {
-        Ok(_success) => message::success(&format!("Success")),
+        Ok(_success) => message::success("Success"),
         Err(e) => super::print_error(e),
     }
 
