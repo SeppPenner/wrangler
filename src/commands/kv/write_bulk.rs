@@ -15,6 +15,8 @@ use cloudflare::workerskv::write_bulk::KeyValuePair;
 
 use crate::terminal::message;
 
+const MAX_KV_PAIRS: usize = 10000;
+
 pub fn write_bulk(namespace_id: &str, filename: &Path) -> Result<(), failure::Error> {
     let client = super::api_client()?;
     let account_id = super::account_id()?;
@@ -38,10 +40,16 @@ pub fn write_bulk(namespace_id: &str, filename: &Path) -> Result<(), failure::Er
         Err(e) => bail!(e)
     };
 
+    // Ensure there are no more than 10K pairs in a single bulk upload.
+    let pairs = pairs?;
+    if pairs.len() > MAX_KV_PAIRS {
+        bail!("Too many key-value pairs uploaded at once {} while max is 10,000", pairs.len());
+    }
+
     let response = client.request(&BulkWrite {
         account_identifier: &account_id,
         namespace_identifier: namespace_id,
-        bulk_key_value_pairs: pairs?,
+        bulk_key_value_pairs: pairs,
     });
 
     match response {
