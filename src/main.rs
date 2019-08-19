@@ -5,6 +5,7 @@ extern crate text_io;
 
 use std::env;
 use std::str::FromStr;
+use std::path::Path;
 
 use clap::{App, AppSettings, Arg, SubCommand};
 use commands::HTTPMethod;
@@ -75,6 +76,24 @@ fn run() -> Result<(), failure::Error> {
                 )
                 .subcommand(
                     SubCommand::with_name("list")
+                )
+                .subcommand(
+                    SubCommand::with_name("delete-key")
+                        .arg(
+                            Arg::with_name("id")
+                        )
+                        .arg(
+                            Arg::with_name("key")
+                        )
+                )
+                .subcommand(
+                    SubCommand::with_name("delete-key-bulk")
+                        .arg(
+                            Arg::with_name("id")
+                        )
+                        .arg(
+                            Arg::with_name("path")
+                        )
                 )
         )
         .subcommand(
@@ -288,6 +307,18 @@ fn run() -> Result<(), failure::Error> {
             }
             ("list", Some(_create_matches)) => {
                 commands::kv::list_namespaces()?;
+            }
+            // todo(gabbi): find better subcommand scheme for deletes across namespaces,
+            // individual keys, and bulk deletion requests
+            ("delete-key", Some(delete_matches)) => {
+                let id = delete_matches.value_of("id").unwrap();
+                let key = delete_matches.value_of("key").unwrap();
+                commands::kv::delete_key(id, key)?;
+            }
+            ("delete-key-bulk", Some(delete_matches)) => {
+                let id = delete_matches.value_of("id").unwrap();
+                let path = delete_matches.value_of("path").unwrap();
+                commands::kv::delete_bulk(id, Path::new(path))?;
             }
             ("", None) => message::warn("kv expects a subcommand"),
             _ => unreachable!(),

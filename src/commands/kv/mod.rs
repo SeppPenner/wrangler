@@ -10,11 +10,15 @@ mod create_namespace;
 mod delete_namespace;
 mod list_namespaces;
 mod rename_namespace;
+mod delete_key;
+mod delete_bulk;
 
 pub use create_namespace::create_namespace;
 pub use delete_namespace::delete_namespace;
 pub use list_namespaces::list_namespaces;
 pub use rename_namespace::rename_namespace;
+pub use delete_key::delete_key;
+pub use delete_bulk::delete_bulk;
 
 fn api_client() -> Result<HttpApiClient, failure::Error> {
     let user = settings::global_user::GlobalUser::new()?;
